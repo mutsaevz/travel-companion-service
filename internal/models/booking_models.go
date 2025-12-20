@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Booking struct {
-	gorm.Model
+	Base
 
 	TripID        uint
 	PassengerID   uint
