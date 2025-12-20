@@ -2,12 +2,10 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Trip struct {
-	gorm.Model
+	Base
 
 	DriverID       uint
 	CarID          uint
