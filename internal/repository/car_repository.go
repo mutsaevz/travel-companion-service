@@ -12,7 +12,7 @@ type CarRepository interface {
 
 	// List() ([]models.Car, error)
 
-	GetByID(id uint) (*models.Car, error)
+	GetByOwner(id uint) (*models.Car, error)
 
 	// Update(car *models.Car) (*models.Car, error)
 
@@ -42,10 +42,10 @@ func (r *gormCarRepository) Create(car *models.Car) error {
 	return nil
 }
 
-func (r *gormCarRepository) GetByID(id uint) (*models.Car, error) {
+func (r *gormCarRepository) GetByOwner(id uint) (*models.Car, error) {
 	var car models.Car
 
-	if err := r.db.First(&car, id).Error; err != nil {
+	if err := r.db.Where("owner_id = ?", id).First(&car).Error; err != nil {
 		return nil, err
 	}
 
