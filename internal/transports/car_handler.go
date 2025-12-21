@@ -27,7 +27,7 @@ func (h *CarHandler) RegisterRoutes(ctx *gin.Engine) {
 
 	{
 		api.POST("/:id", h.Create)
-		api.GET("/:id", h.GetByID)
+		api.GET("/:id", h.GetByOwner)
 	}
 }
 
@@ -57,7 +57,7 @@ func (h *CarHandler) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, car)
 }
 
-func (h *CarHandler) GetByID(ctx *gin.Context) {
+func (h *CarHandler) GetByOwner(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
 
@@ -66,7 +66,7 @@ func (h *CarHandler) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	car, err := h.service.GetByID(uint(id))
+	car, err := h.service.GetByOwner(uint(id))
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "record not found"})
