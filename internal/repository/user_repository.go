@@ -98,7 +98,7 @@ func (r gormUserRepository) Update(id uint, user *models.User) error {
 		slog.String("user_name", user.Name),
 	)
 
-	if err := r.db.Model(&models.User{}).Where("id = ?", id).Updates(&user).Error; err != nil {
+	if err := r.db.Model(&models.User{}).Where("id = ?", id).Updates(user).Error; err != nil {
 		r.logger.Error("db error",
 			slog.String("op", op),
 			slog.Any("error", err),
@@ -118,7 +118,7 @@ func (r *gormUserRepository) Delete(id uint) error {
 		slog.Uint64("id", uint64(id)),
 	)
 
-	if err := r.db.Delete(id).Error; err != nil {
+	if err := r.db.Delete(&models.User{}, id).Error; err != nil {
 		r.logger.Error("db error",
 			slog.Any("error", err),
 		)
