@@ -10,13 +10,13 @@ import (
 type BookingRepository interface {
 	Create(booking *models.Booking) error
 
-	// List() ([]models.Booking, error)
+	List() ([]models.Booking, error)
 
-	// GetByID(id uint) (*models.Booking, error)
+	GetByID(id uint) (*models.Booking, error)
 
-	// Update(booking *models.Booking) (*models.Booking, error)
+	Update(booking *models.Booking) error
 
-	// Delete(id uint) error
+	Delete(id uint) error
 }
 
 type gormBookingRepository struct {
@@ -41,12 +41,77 @@ func (r *gormBookingRepository) Create(booking *models.Booking) error {
 	)
 
 	if err := r.DB.Create(booking).Error; err != nil {
-		r.logger.Error("db error",
-			slog.String("op", op),
-			slog.Any("error", err),
-		)
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
 		return err
 	}
 
+	return nil
+}
+
+func (r *gormBookingRepository) List() ([]models.Booking, error) {
+
+	op := "repository.booking.list"
+
+	r.logger.Debug("db call", slog.String("op", op))
+
+	var bookings []models.Booking
+
+	if err := r.DB.Find(&bookings).Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return nil, err
+	}
+	r.logger.Debug("db response", slog.String("op", op), slog.Int("count", len(bookings)))
+	return bookings, nil
+
+}
+
+func (r *gormBookingRepository) GetByID(id uint) (*models.Booking, error) {
+
+	op := "repository.booking.get_by_id"
+
+	r.logger.Debug("db call",
+		slog.String("op", op),
+		slog.Uint64("booking_id", uint64(id)),
+	)
+
+	var booking models.Booking
+
+	if err := r.DB.Where("id = ?", id).First(&booking).Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return nil, err
+	}
+	return &booking, nil
+}
+
+func (r *gormBookingRepository) Update(booking *models.Booking) error {
+
+	op := "repository.booking.update"
+
+	r.logger.Debug("db call",
+		slog.String("op", op),
+		slog.Uint64("booking_id", uint64(booking.ID)),
+	)
+
+	if err := r.DB.Model(&models.Booking{}).Where("id = ?", booking.ID).Updates(booking).Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return err
+	}
+	return nil
+}
+
+func (r *gormBookingRepository) Delete(id uint) error {
+	op := "repository.booking.delete"
+
+	r.logger.Debug("db call",
+		slog.String("op", op),
+		slog.Uint64("booking_id", uint64(id)),
+	)
+
+	result := r.DB.Delete(&models.Booking{}, id)
+
+	if result.Error != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", result.Error))
+		return result.Error
+	}
 	return nil
 }
