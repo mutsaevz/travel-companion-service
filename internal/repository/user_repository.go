@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log/slog"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
@@ -80,6 +81,11 @@ func (r *gormUserRepository) GetByID(id uint) (*models.User, error) {
 	var user *models.User
 
 	if err := r.db.First(&user, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.logger.Warn("user not found", slog.Uint64("user_id", uint64(id)))
+			return nil, ErrNotFound
+		}
+
 		r.logger.Error("db error",
 			slog.String("op", op),
 			slog.Any("error", err),

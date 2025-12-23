@@ -63,6 +63,9 @@ func (r *gormCarRepository) GetByOwner(id uint) (*models.Car, error) {
 	var car models.Car
 
 	if err := r.db.Where("owner_id = ?", id).First(&car).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -82,13 +85,14 @@ func (r *gormCarRepository) GetByID(id uint) (*models.Car, error) {
 				"Автомобиль не найден",
 				slog.Uint64("car_id", uint64(id)),
 			)
-		} else {
-			r.logger.Error(
-				"Ошибка при получении автомобиля",
-				slog.Uint64("car_id", uint64(id)),
-				slog.String("error", err.Error()),
-			)
+			return nil, ErrNotFound
 		}
+
+		r.logger.Error(
+			"Ошибка при получении автомобиля",
+			slog.Uint64("car_id", uint64(id)),
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 

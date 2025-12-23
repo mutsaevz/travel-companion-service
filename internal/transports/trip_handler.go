@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
+	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
 
@@ -37,7 +38,7 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 	var req models.TripCreateRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -50,11 +51,16 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 
 	trip, err := h.service.Create(uint(id), &req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		if err == repository.ErrNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "driver or car not found"})
+			return
+		}
+		h.logger.Error("failed to create trip", slog.Any("error", err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, trip)
+	ctx.JSON(http.StatusCreated, trip)
 }
 
 func (h *TripHandler) List(ctx *gin.Context) {
@@ -87,7 +93,12 @@ func (h *TripHandler) GetByID(ctx *gin.Context) {
 
 	trip, err := h.service.GetByID(uint(id))
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "trip not found"})
+		if err == repository.ErrNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "trip not found"})
+			return
+		}
+		h.logger.Error("failed to get trip", slog.Uint64("trip_id", uint64(id)), slog.Any("error", err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -110,7 +121,12 @@ func (h *TripHandler) Update(ctx *gin.Context) {
 
 	trip, err := h.service.Update(uint(id), req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if err == repository.ErrNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "trip not found"})
+			return
+		}
+		h.logger.Error("failed to update trip", slog.Uint64("trip_id", uint64(id)), slog.Any("error", err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -126,7 +142,12 @@ func (h *TripHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.service.Delete(uint(id)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if err == repository.ErrNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "trip not found"})
+			return
+		}
+		h.logger.Error("failed to delete trip", slog.Uint64("trip_id", uint64(id)), slog.Any("error", err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 

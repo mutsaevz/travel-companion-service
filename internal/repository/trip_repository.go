@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log/slog"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
@@ -79,6 +80,9 @@ func (r *gormTripRepository) GetByID(id uint) (*models.Trip, error) {
 	var trip models.Trip
 
 	if err := r.db.First(&trip, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
