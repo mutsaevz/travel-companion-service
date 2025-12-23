@@ -20,6 +20,8 @@ type TripRepository interface {
 	Delete(id uint) error
 
 	WithDB(db *gorm.DB) TripRepository
+
+	UpdateAvgRating(tripID uint, avg float64) error
 }
 
 type gormTripRepository struct {
@@ -117,4 +119,18 @@ func (r *gormTripRepository) WithDB(db *gorm.DB) TripRepository {
 		db:     db,
 		logger: r.logger,
 	}
+}
+
+func (r *gormTripRepository) UpdateAvgRating(tripID uint, avg float64) error {
+	op := "repository.trip.update_avg_rating"
+	r.logger.Debug("db call",
+		slog.String("op", op),
+		slog.Uint64("trip_id", uint64(tripID)),
+		slog.Float64("avg_rating", avg),
+	)
+	if err := r.db.Model(&models.Trip{}).Where("id = ?", tripID).Update("avg_rating", avg).Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return err
+	}
+	return nil
 }
