@@ -73,7 +73,23 @@ func (h *UserHandler) List(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 
-	users, err := h.service.List()
+	var filter models.UserFilter
+
+	if pageStr := ctx.Query("page"); pageStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err == nil {
+			filter.Page = page
+		}
+	}
+
+	if pageSizeStr := ctx.Query("pageSize"); pageSizeStr != "" {
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err == nil {
+			filter.PageSize = pageSize
+		}
+	}
+
+	users, err := h.service.List(filter)
 	if err != nil {
 		h.logger.Error("user list error",
 			slog.String("method", ctx.Request.Method),
