@@ -18,14 +18,6 @@ type TripService interface {
 	Update(id uint, req models.TripUpdateRequest) (*models.Trip, error)
 
 	Delete(id uint) error
-
-	// List() ([]models.Trip, error)
-
-	// GetByID(id uint) (*models.Trip, error)
-
-	// Update(id uint, req *models.Trip) (*models.Trip, error)
-
-	// Delete(id uint) error
 }
 
 type tripService struct {

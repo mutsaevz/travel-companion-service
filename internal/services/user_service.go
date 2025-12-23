@@ -10,7 +10,7 @@ import (
 type UserService interface {
 	Create(req *models.UserCreateRequest) (*models.User, error)
 
-	List() ([]models.User, error)
+	List(filter models.UserFilter) ([]models.User, error)
 
 	GetByID(id uint) (*models.User, error)
 
@@ -48,8 +48,8 @@ func (s *userService) Create(req *models.UserCreateRequest) (*models.User, error
 	return &user, nil
 }
 
-func (s *userService) List() ([]models.User, error) {
-	users, err := s.repo.List()
+func (s *userService) List(filter models.UserFilter) ([]models.User, error) {
+	users, err := s.repo.List(filter)
 	if err != nil {
 		s.logger.Error("user list error",
 			slog.Any("error", err),

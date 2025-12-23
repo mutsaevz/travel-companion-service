@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
@@ -66,12 +67,33 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 func (h *TripHandler) List(ctx *gin.Context) {
 	var filter models.TripFilter
 
-	if from := ctx.Query("from_city"); from != "" {
+	if from := ctx.Query("fromCity"); from != "" {
 		filter.FromCity = &from
 	}
 
-	if to := ctx.Query("to_city"); to != "" {
+	if to := ctx.Query("toCity"); to != "" {
 		filter.ToCity = &to
+	}
+
+	if timeStr := ctx.Query("startTime"); timeStr != "" {
+		time, err := time.Parse(time.RFC3339, timeStr)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid time format"})
+			return
+		}
+		filter.StartTime = &time
+	}
+
+	if pageStr := ctx.Query("page"); pageStr != "" {
+		if page, err := strconv.Atoi(pageStr); err == nil {
+			filter.Page = page
+		}
+	}
+
+	if pagesizeStr := ctx.Query("pageSize"); pagesizeStr != "" {
+		if pageSize, err := strconv.Atoi(pagesizeStr); err == nil {
+			filter.PageSize = pageSize
+		}
 	}
 
 	list, err := h.service.List(filter)
