@@ -35,7 +35,7 @@ func NewTripRepository(db *gorm.DB, logger *slog.Logger) TripRepository {
 
 func (r *gormTripRepository) Create(trip *models.Trip) error {
 
-	if err := r.db.Create(&trip).Error; err != nil {
+	if err := r.db.Create(trip).Error; err != nil {
 		return err
 	}
 
@@ -58,6 +58,14 @@ func (r *gormTripRepository) List(filter models.TripFilter) ([]models.Trip, erro
 
 	if filter.AvailableSeats != nil {
 		query = query.Where("available_seats >= ?", *filter.AvailableSeats)
+	}
+
+	if filter.StartTime != nil {
+		query = query.Where("start_time >= ?", *filter.StartTime)
+	}
+
+	if filter.TripStatus != nil {
+		query = query.Where("trip_status = ?", *filter.TripStatus)
 	}
 
 	if err := query.Find(&list).Error; err != nil {
@@ -86,7 +94,7 @@ func (r *gormTripRepository) Update(trip *models.Trip) error {
 	)
 
 	return r.db.
-		Model(&models.Booking{}).
+		Model(&models.Trip{}).
 		Where("id = ?", trip.ID).
 		Updates(trip).
 		Error

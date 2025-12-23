@@ -42,7 +42,7 @@ func (r *gormCarRepository) Create(car *models.Car) error {
 		slog.String("brand", car.Brand),
 	)
 
-	err := r.db.Create(&car).Error
+	err := r.db.Create(car).Error
 
 	if err != nil {
 		r.logger.Error(
