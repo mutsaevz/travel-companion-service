@@ -69,7 +69,19 @@ func (r *gormTripRepository) List(filter models.TripFilter) ([]models.Trip, erro
 		query = query.Where("trip_status = ?", *filter.TripStatus)
 	}
 
-	if err := query.Find(&list).Error; err != nil {
+	page := filter.Page
+	pageSize := filter.PageSize
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 50
+	}
+
+	offset := (page - 1) * pageSize
+
+	if err := query.Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
 		return nil, err
 	}
 

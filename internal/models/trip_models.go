@@ -33,11 +33,14 @@ type TripCreateRequest struct {
 }
 
 type TripFilter struct {
-	FromCity       *string               `json:"from_city"`
-	ToCity         *string               `json:"to_city"`
-	StartTime      *time.Time            `json:"start_time"`
-	AvailableSeats *int                  `json:"available_seats"`
-	TripStatus     *constants.TripStatus `json:"trip_status"`
+	FromCity       *string
+	ToCity         *string
+	StartTime      *time.Time
+	AvailableSeats *int
+	TripStatus     *constants.TripStatus
+
+	Page     int
+	PageSize int
 }
 
 type TripUpdateRequest struct {
