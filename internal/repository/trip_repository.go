@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log/slog"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
@@ -35,7 +36,7 @@ func NewTripRepository(db *gorm.DB, logger *slog.Logger) TripRepository {
 
 func (r *gormTripRepository) Create(trip *models.Trip) error {
 
-	if err := r.db.Create(&trip).Error; err != nil {
+	if err := r.db.Create(trip).Error; err != nil {
 		return err
 	}
 
@@ -60,6 +61,14 @@ func (r *gormTripRepository) List(filter models.TripFilter) ([]models.Trip, erro
 		query = query.Where("available_seats >= ?", *filter.AvailableSeats)
 	}
 
+	if filter.StartTime != nil {
+		query = query.Where("start_time >= ?", *filter.StartTime)
+	}
+
+	if filter.TripStatus != nil {
+		query = query.Where("trip_status = ?", *filter.TripStatus)
+	}
+
 	if err := query.Find(&list).Error; err != nil {
 		return nil, err
 	}
@@ -71,6 +80,9 @@ func (r *gormTripRepository) GetByID(id uint) (*models.Trip, error) {
 	var trip models.Trip
 
 	if err := r.db.First(&trip, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -86,7 +98,7 @@ func (r *gormTripRepository) Update(trip *models.Trip) error {
 	)
 
 	return r.db.
-		Model(&models.Booking{}).
+		Model(&models.Trip{}).
 		Where("id = ?", trip.ID).
 		Updates(trip).
 		Error
