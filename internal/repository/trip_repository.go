@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
@@ -162,4 +163,30 @@ func (r *gormTripRepository) IsPassenger(tripID, userID uint) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+func TripStatusUpdate(repo TripRepository) {
+	r, ok := repo.(*gormTripRepository)
+	if !ok {
+		panic("TripStatusUpdate requires gormTripRepository")
+	}
+
+	go func() {
+		for {
+			time.Sleep(1 * time.Minute)
+			now := time.Now().UTC()
+
+			r.db.Model(&models.Trip{}).
+				Where("trip_status = ?", "published").
+				Where("start_time <= ?", now).
+				Update("trip_status", "in_progress")
+
+			r.db.Model(&models.Trip{}).
+				Where("trip_status = ?", "in_progress").
+				Where("start_time + (duration_min * interval '1 minute') <= ?", now).
+				Update("trip_status", "completed")
+
+		}
+	}()
+
 }
