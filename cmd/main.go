@@ -62,6 +62,8 @@ func main() {
 		port = "8080"
 	}
 
+	repository.TripStatusUpdate(tripRepo)
+
 	logger.Info("application started successfully")
 
 	if err := r.Run(":" + port); err != nil {

@@ -27,7 +27,7 @@ func NewTripHandler(service services.TripService, logger *slog.Logger) *TripHand
 func (h *TripHandler) RegisterRoutes(ctx *gin.Engine) {
 	api := ctx.Group("/trips")
 	{
-		api.POST("/:id", h.Create)
+		api.POST("/driver/:driverID", h.Create)
 		api.GET("/", h.List)
 		api.GET("/:id", h.GetByID)
 		api.PUT("/:id", h.Update)
@@ -43,7 +43,7 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	idStr := ctx.Param("id")
+	idStr := ctx.Param("driverID")
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
@@ -53,7 +53,7 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 	trip, err := h.service.Create(uint(id), &req)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "driver or car not found"})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "driver not found"})
 			return
 		}
 		h.logger.Error("failed to create trip", slog.Any("error", err))
