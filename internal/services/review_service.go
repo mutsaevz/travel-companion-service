@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 )
@@ -15,9 +16,9 @@ var (
 )
 
 type ReviewService interface {
-	Create(tripID uint, req *models.ReviewCreateRequest) (*models.Review, error)
+	Create(tripID uint, req *dto.ReviewCreateRequest) (*models.Review, error)
 
-	// List() (*models.Review, error)
+	List(filter models.Page) ([]models.Review, error)
 
 	// GetByID(id uint) (*models.Review, error)
 
@@ -44,7 +45,7 @@ func NewReviewService(
 	}
 }
 
-func (s *reviewService) Create(tripID uint, req *models.ReviewCreateRequest) (*models.Review, error) {
+func (s *reviewService) Create(tripID uint, req *dto.ReviewCreateRequest) (*models.Review, error) {
 
 	op := "service.review.create"
 
@@ -112,4 +113,19 @@ func (s *reviewService) Create(tripID uint, req *models.ReviewCreateRequest) (*m
 		return nil, err
 	}
 	return review, nil
+}
+
+func (s *reviewService) List(filter models.Page) ([]models.Review, error) {
+
+	op := "service.review.list"
+
+	s.logger.Debug(" call", slog.String("op", op))
+
+	reviews, err := s.reviewRepo.List(filter)
+	if err != nil {
+		s.logger.Error(" error", slog.String("op", op), slog.Any("error", err))
+		return nil, err
+	}
+	s.logger.Info("reviews listed", slog.String("op", op), slog.Int("count", len(reviews)))
+	return reviews, nil
 }

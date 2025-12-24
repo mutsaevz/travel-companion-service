@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
@@ -35,7 +36,7 @@ func (h *CarHandler) RegisterRoutes(ctx *gin.Engine) {
 
 // POST /cars/:id
 func (h *CarHandler) Create(ctx *gin.Context) {
-	var input models.CarCreateRequest
+	var input dto.CarCreateRequest
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("Invalid JSON for car creation", slog.String("error", err.Error()))
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
@@ -63,7 +64,24 @@ func (h *CarHandler) Create(ctx *gin.Context) {
 
 // GET /cars
 func (h *CarHandler) List(ctx *gin.Context) {
-	cars, err := h.service.List()
+
+	var filter models.Page
+
+	if pageStr := ctx.Query("page"); pageStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err == nil {
+			filter.Page = page
+		}
+	}
+
+	if pageSizeStr := ctx.Query("pageSize"); pageSizeStr != "" {
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err == nil {
+			filter.PageSize = pageSize
+		}
+	}
+
+	cars, err := h.service.List(filter)
 	if err != nil {
 		h.logger.Error("Failed to list cars", slog.String("error", err.Error()))
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get cars"})
@@ -126,7 +144,7 @@ func (h *CarHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var input models.CarUpdateRequest
+	var input dto.CarUpdateRequest
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("Invalid JSON for car update", slog.String("error", err.Error()))
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})

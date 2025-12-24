@@ -10,7 +10,7 @@ import (
 type ReviewRepository interface {
 	Create(review *models.Review) error
 
-	List() ([]models.Review, error)
+	List(filter models.Page) ([]models.Review, error)
 
 	GetByID(id uint) (*models.Review, error)
 
@@ -49,13 +49,26 @@ func (r *gormReviewRepository) Create(review *models.Review) error {
 	return nil
 }
 
-func (r *gormReviewRepository) List() ([]models.Review, error) {
+func (r *gormReviewRepository) List(filter models.Page) ([]models.Review, error) {
 
 	op := "repository.review.list"
 	r.logger.Debug("db call", slog.String("op", op))
 	var reviews []models.Review
 
-	if err := r.DB.Find(&reviews).Error; err != nil {
+	page := filter.Page
+	pageSize := filter.PageSize
+
+	if page < 1 {
+		page = 1
+	}
+
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+	}
+
+	offset := (page - 1) * pageSize
+
+	if err := r.DB.Offset(offset).Limit(pageSize).Find(&reviews).Error; err != nil {
 		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
 		return nil, err
 	}

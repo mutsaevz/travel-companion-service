@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mutsaevz/team-5-ambitious/internal/models"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
@@ -36,7 +36,7 @@ func (h *TripHandler) RegisterRoutes(ctx *gin.Engine) {
 }
 
 func (h *TripHandler) Create(ctx *gin.Context) {
-	var req models.TripCreateRequest
+	var req dto.TripCreateRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -65,7 +65,7 @@ func (h *TripHandler) Create(ctx *gin.Context) {
 }
 
 func (h *TripHandler) List(ctx *gin.Context) {
-	var filter models.TripFilter
+	var filter dto.TripFilter
 
 	if from := ctx.Query("fromCity"); from != "" {
 		filter.FromCity = &from
@@ -135,7 +135,7 @@ func (h *TripHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req models.TripUpdateRequest
+	var req dto.TripUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return

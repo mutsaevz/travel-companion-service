@@ -3,18 +3,19 @@ package services
 import (
 	"log/slog"
 
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 )
 
 type UserService interface {
-	Create(req *models.UserCreateRequest) (*models.User, error)
+	Create(req *dto.UserCreateRequest) (*models.User, error)
 
-	List(filter models.UserFilter) ([]models.User, error)
+	List(filter models.Page) ([]models.User, error)
 
 	GetByID(id uint) (*models.User, error)
 
-	Update(id uint, req models.UserUpdateRequest) (*models.User, error)
+	Update(id uint, req dto.UserUpdateRequest) (*models.User, error)
 
 	Delete(id uint) error
 }
@@ -31,7 +32,7 @@ func NewUserService(userRepo repository.UserRepository, logger *slog.Logger) Use
 	}
 }
 
-func (s *userService) Create(req *models.UserCreateRequest) (*models.User, error) {
+func (s *userService) Create(req *dto.UserCreateRequest) (*models.User, error) {
 	var user = models.User{
 		Name:    req.Name,
 		Phone:   req.Phone,
@@ -48,7 +49,7 @@ func (s *userService) Create(req *models.UserCreateRequest) (*models.User, error
 	return &user, nil
 }
 
-func (s *userService) List(filter models.UserFilter) ([]models.User, error) {
+func (s *userService) List(filter models.Page) ([]models.User, error) {
 	users, err := s.repo.List(filter)
 	if err != nil {
 		s.logger.Error("user list error",
@@ -72,7 +73,7 @@ func (s *userService) GetByID(id uint) (*models.User, error) {
 	return user, nil
 }
 
-func (s *userService) Update(id uint, req models.UserUpdateRequest) (*models.User, error) {
+func (s *userService) Update(id uint, req dto.UserUpdateRequest) (*models.User, error) {
 	user, err := s.repo.GetByID(id)
 	if err != nil {
 		s.logger.Error("user not found",
