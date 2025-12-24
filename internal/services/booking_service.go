@@ -6,15 +6,16 @@ import (
 	"log/slog"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/constants"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 	"gorm.io/gorm"
 )
 
 type BookingService interface {
-	Create(req *models.BookingCreateRequest) (*models.Booking, error)
+	Create(req *dto.BookingCreateRequest) (*models.Booking, error)
 
-	List() ([]models.Booking, error)
+	List(filter models.Page) ([]models.Booking, error)
 
 	Approve(bookingID uint, driverID uint) error
 
@@ -24,7 +25,7 @@ type BookingService interface {
 
 	GetAllPendingBookingsByTripID(tripID uint) ([]models.Booking, error)
 
-	Update(id uint, req *models.BookingUpdateRequest) (*models.Booking, error)
+	Update(id uint, req *dto.BookingUpdateRequest) (*models.Booking, error)
 
 	Delete(id uint) error
 }
@@ -51,7 +52,7 @@ func NewBookingService(
 }
 
 func (s *bookingService) Create(
-	req *models.BookingCreateRequest,
+	req *dto.BookingCreateRequest,
 ) (*models.Booking, error) {
 	op := "service.booking.Create"
 
@@ -164,13 +165,13 @@ func (s *bookingService) GetAllPendingBookingsByTripID(tripID uint) ([]models.Bo
 	return bookings, nil
 }
 
-func (s *bookingService) List() ([]models.Booking, error) {
+func (s *bookingService) List(filter models.Page) ([]models.Booking, error) {
 
 	op := "service.booking.list"
 
 	s.logger.Debug(" call", slog.String("op", op))
 
-	bookings, err := s.bookingRepo.List()
+	bookings, err := s.bookingRepo.List(filter)
 	if err != nil {
 		s.logger.Error(" error", slog.String("op", op), slog.Any("error", err))
 		return nil, err
@@ -192,7 +193,7 @@ func (s *bookingService) GetByID(id uint) (*models.Booking, error) {
 	return booking, nil
 }
 
-func (s *bookingService) Update(id uint, req *models.BookingUpdateRequest) (*models.Booking, error) {
+func (s *bookingService) Update(id uint, req *dto.BookingUpdateRequest) (*models.Booking, error) {
 	op := "service.booking.Update"
 
 	s.logger.Debug(" call", slog.String("op", op), slog.Uint64("booking_id", uint64(id)))

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"gorm.io/gorm"
 )
@@ -11,7 +12,7 @@ import (
 type TripRepository interface {
 	Create(trip *models.Trip) error
 
-	List(filter models.TripFilter) ([]models.Trip, error)
+	List(filter dto.TripFilter) ([]models.Trip, error)
 
 	GetByID(id uint) (*models.Trip, error)
 
@@ -47,7 +48,7 @@ func (r *gormTripRepository) Create(trip *models.Trip) error {
 	return nil
 }
 
-func (r *gormTripRepository) List(filter models.TripFilter) ([]models.Trip, error) {
+func (r *gormTripRepository) List(filter dto.TripFilter) ([]models.Trip, error) {
 	var list []models.Trip
 
 	query := r.db.Model(&models.Trip{}).

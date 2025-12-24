@@ -1,0 +1,38 @@
+package dto
+
+import (
+	"time"
+
+	"github.com/mutsaevz/team-5-ambitious/internal/constants"
+)
+
+type TripCreateRequest struct {
+	FromCity       string               `json:"from_city"`
+	ToCity         string               `json:"to_city"`
+	StartTime      time.Time            `json:"start_time"`
+	DurationMin    int                  `json:"duration_min"`
+	AvailableSeats int                  `json:"available_seats"`
+	Price          int                  `json:"price"`
+	TripStatus     constants.TripStatus `json:"trip_status"`
+}
+
+type TripFilter struct {
+	FromCity       *string
+	ToCity         *string
+	StartTime      *time.Time
+	AvailableSeats *int
+	TripStatus     *constants.TripStatus
+
+	Page     int
+	PageSize int
+}
+
+type TripUpdateRequest struct {
+	FromCity       *string               `json:"from_city"`
+	ToCity         *string               `json:"to_city"`
+	StartTime      *time.Time            `json:"start_time"`
+	DurationMin    *int                  `json:"duration_min"`
+	AvailableSeats *int                  `json:"available_seats"`
+	Price          *int                  `json:"price"`
+	TripStatus     *constants.TripStatus `json:"trip_status"`
+}

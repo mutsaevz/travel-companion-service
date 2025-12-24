@@ -10,7 +10,7 @@ import (
 type BookingRepository interface {
 	Create(booking *models.Booking) error
 
-	List() ([]models.Booking, error)
+	List(filter models.Page) ([]models.Booking, error)
 
 	GetByID(id uint) (*models.Booking, error)
 
@@ -54,7 +54,7 @@ func (r *gormBookingRepository) Create(booking *models.Booking) error {
 	return nil
 }
 
-func (r *gormBookingRepository) List() ([]models.Booking, error) {
+func (r *gormBookingRepository) List(filter models.Page) ([]models.Booking, error) {
 
 	op := "repository.booking.list"
 
@@ -62,7 +62,20 @@ func (r *gormBookingRepository) List() ([]models.Booking, error) {
 
 	var bookings []models.Booking
 
-	if err := r.DB.Find(&bookings).Error; err != nil {
+	page := filter.Page
+	pageSize := filter.PageSize
+
+	if page < 1 {
+		page = 1
+	}
+
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+	}
+
+	offset := (page - 1) * pageSize
+
+	if err := r.DB.Offset(offset).Limit(pageSize).Find(&bookings).Error; err != nil {
 		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
@@ -41,7 +42,7 @@ func (h *BookingHandler) Create(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 
-	var input models.BookingCreateRequest
+	var input dto.BookingCreateRequest
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("invalid JSON",
@@ -76,7 +77,23 @@ func (h *BookingHandler) List(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 
-	bookings, err := h.service.List()
+	var filter models.Page
+
+	if pageStr := ctx.Query("page"); pageStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err == nil {
+			filter.Page = page
+		}
+	}
+
+	if pageSizeStr := ctx.Query("pageSize"); pageSizeStr != "" {
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err == nil {
+			filter.PageSize = pageSize
+		}
+	}
+
+	bookings, err := h.service.List(filter)
 
 	if err != nil {
 		h.logger.Error("error getting bookings",
@@ -189,7 +206,7 @@ func (h *BookingHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var input models.BookingUpdateRequest
+	var input dto.BookingUpdateRequest
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("invalid JSON",

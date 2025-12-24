@@ -11,7 +11,7 @@ import (
 type CarRepository interface {
 	Create(car *models.Car) error
 
-	List() ([]models.Car, error)
+	List(filter models.Page) ([]models.Car, error)
 
 	GetByOwner(id uint) (*models.Car, error)
 
@@ -106,12 +106,25 @@ func (r *gormCarRepository) GetByID(id uint) (*models.Car, error) {
 	return &car, nil
 }
 
-func (r *gormCarRepository) List() ([]models.Car, error) {
+func (r *gormCarRepository) List(filter models.Page) ([]models.Car, error) {
 	r.logger.Info("Запрос списка автомобилей")
 
 	var cars []models.Car
 
-	if err := r.db.Find(&cars).Error; err != nil {
+	page := filter.Page
+	pageSize := filter.PageSize
+
+	if page < 1 {
+		page = 1
+	}
+
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+	}
+
+	offset := (page - 1) * pageSize
+
+	if err := r.db.Offset(offset).Limit(pageSize).Find(&cars).Error; err != nil {
 		r.logger.Error(
 			"Ошибка при получении списка автомобилей",
 			slog.String("error", err.Error()),

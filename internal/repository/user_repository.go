@@ -11,7 +11,7 @@ import (
 type UserRepository interface {
 	Create(user *models.User) error
 
-	List(filter models.UserFilter) ([]models.User, error)
+	List(filter models.Page) ([]models.User, error)
 
 	GetByID(id uint) (*models.User, error)
 
@@ -51,7 +51,7 @@ func (r *gormUserRepository) Create(user *models.User) error {
 	return nil
 }
 
-func (r *gormUserRepository) List(filter models.UserFilter) ([]models.User, error) {
+func (r *gormUserRepository) List(filter models.Page) ([]models.User, error) {
 	op := "repository.user.list"
 
 	r.logger.Debug("db call",

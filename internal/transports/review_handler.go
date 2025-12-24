@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mutsaevz/team-5-ambitious/internal/models"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
 
@@ -43,7 +43,7 @@ func (h *ReviewHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req models.ReviewCreateRequest
+	var req dto.ReviewCreateRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

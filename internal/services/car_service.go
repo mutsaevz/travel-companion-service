@@ -3,20 +3,22 @@ package services
 import (
 	"log/slog"
 
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
+
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 )
 
 type CarService interface {
-	Create(id uint, req models.CarCreateRequest) (*models.Car, error)
+	Create(id uint, req dto.CarCreateRequest) (*models.Car, error)
 
-	List() ([]models.Car, error)
+	List(filter models.Page) ([]models.Car, error)
 
 	GetByOwner(id uint) (*models.Car, error)
 
 	GetByID(id uint) (*models.Car, error)
 
-	Update(id uint, req models.CarUpdateRequest) (*models.Car, error)
+	Update(id uint, req dto.CarUpdateRequest) (*models.Car, error)
 
 	Delete(id uint) error
 }
@@ -35,7 +37,7 @@ func NewCarService(carRepo repository.CarRepository, userRepo repository.UserRep
 	}
 }
 
-func (s *carService) Create(id uint, req models.CarCreateRequest) (*models.Car, error) {
+func (s *carService) Create(id uint, req dto.CarCreateRequest) (*models.Car, error) {
 	driver, err := s.userRepo.GetByID(id)
 	if err != nil {
 		s.logger.Error("Пользователь не найден", slog.Uint64("user_id", uint64(id)), slog.String("error", err.Error()))
@@ -75,8 +77,8 @@ func (s *carService) GetByID(id uint) (*models.Car, error) {
 	return car, nil
 }
 
-func (s *carService) List() ([]models.Car, error) {
-	cars, err := s.carRepo.List()
+func (s *carService) List(filter models.Page) ([]models.Car, error) {
+	cars, err := s.carRepo.List(filter)
 	if err != nil {
 		s.logger.Error("Ошибка при получении списка автомобилей", slog.String("error", err.Error()))
 		return nil, err
@@ -84,7 +86,7 @@ func (s *carService) List() ([]models.Car, error) {
 	return cars, nil
 }
 
-func (s *carService) Update(id uint, req models.CarUpdateRequest) (*models.Car, error) {
+func (s *carService) Update(id uint, req dto.CarUpdateRequest) (*models.Car, error) {
 	car, err := s.carRepo.GetByID(id)
 	if err != nil {
 		s.logger.Error("Автомобиль не найден для обновления", slog.Uint64("car_id", uint64(id)), slog.String("error", err.Error()))

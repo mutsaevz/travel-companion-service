@@ -4,18 +4,19 @@ import (
 	"log/slog"
 
 	"github.com/mutsaevz/team-5-ambitious/internal/constants"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/repository"
 )
 
 type TripService interface {
-	Create(driverID uint, req *models.TripCreateRequest) (*models.Trip, error)
+	Create(driverID uint, req *dto.TripCreateRequest) (*models.Trip, error)
 
-	List(filter models.TripFilter) ([]models.Trip, error)
+	List(filter dto.TripFilter) ([]models.Trip, error)
 
 	GetByID(id uint) (*models.Trip, error)
 
-	Update(id uint, req models.TripUpdateRequest) (*models.Trip, error)
+	Update(id uint, req dto.TripUpdateRequest) (*models.Trip, error)
 
 	Delete(id uint) error
 }
@@ -40,7 +41,7 @@ func NewTripService(
 	}
 }
 
-func (s *tripService) Create(id uint, req *models.TripCreateRequest) (*models.Trip, error) {
+func (s *tripService) Create(id uint, req *dto.TripCreateRequest) (*models.Trip, error) {
 	driver, err := s.userRepo.GetByID(id)
 
 	if err != nil {
@@ -73,7 +74,7 @@ func (s *tripService) Create(id uint, req *models.TripCreateRequest) (*models.Tr
 	return &trip, nil
 }
 
-func (s *tripService) List(filter models.TripFilter) ([]models.Trip, error) {
+func (s *tripService) List(filter dto.TripFilter) ([]models.Trip, error) {
 	return s.tripRepo.List(filter)
 }
 
@@ -90,7 +91,7 @@ func (s *tripService) GetByID(id uint) (*models.Trip, error) {
 	return trip, nil
 }
 
-func (s *tripService) Update(id uint, req models.TripUpdateRequest) (*models.Trip, error) {
+func (s *tripService) Update(id uint, req dto.TripUpdateRequest) (*models.Trip, error) {
 	trip, err := s.tripRepo.GetByID(id)
 	if err != nil {
 		s.logger.Error("trip not found for update",

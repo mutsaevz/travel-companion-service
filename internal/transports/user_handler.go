@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mutsaevz/team-5-ambitious/internal/dto"
 	"github.com/mutsaevz/team-5-ambitious/internal/models"
 	"github.com/mutsaevz/team-5-ambitious/internal/services"
 )
@@ -39,7 +40,7 @@ func (h *UserHandler) Create(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 
-	var input models.UserCreateRequest
+	var input dto.UserCreateRequest
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("invalid JSON",
@@ -73,7 +74,7 @@ func (h *UserHandler) List(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 
-	var filter models.UserFilter
+	var filter models.Page
 
 	if pageStr := ctx.Query("page"); pageStr != "" {
 		page, err := strconv.Atoi(pageStr)
@@ -153,7 +154,7 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var input models.UserUpdateRequest
+	var input dto.UserUpdateRequest
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		h.logger.Warn("invalid JSON",

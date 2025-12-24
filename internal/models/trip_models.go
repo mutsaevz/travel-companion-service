@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/mutsaevz/team-5-ambitious/internal/constants"
 )
 
 type Trip struct {
@@ -20,35 +18,4 @@ type Trip struct {
 	Price          int       `json:"price" gorm:"not null;check:price >= 0"`
 	TripStatus     string    `json:"trip_status" gorm:"type:varchar(50);not null;index"`
 	AvgRating      float64   `json:"avg_rating" gorm:"default:0.0;check:avg_rating >= 0 AND avg_rating <= 5"`
-}
-
-type TripCreateRequest struct {
-	FromCity       string               `json:"from_city"`
-	ToCity         string               `json:"to_city"`
-	StartTime      time.Time            `json:"start_time"`
-	DurationMin    int                  `json:"duration_min"`
-	AvailableSeats int                  `json:"available_seats"`
-	Price          int                  `json:"price"`
-	TripStatus     constants.TripStatus `json:"trip_status"`
-}
-
-type TripFilter struct {
-	FromCity       *string
-	ToCity         *string
-	StartTime      *time.Time
-	AvailableSeats *int
-	TripStatus     *constants.TripStatus
-
-	Page     int
-	PageSize int
-}
-
-type TripUpdateRequest struct {
-	FromCity       *string               `json:"from_city"`
-	ToCity         *string               `json:"to_city"`
-	StartTime      *time.Time            `json:"start_time"`
-	DurationMin    *int                  `json:"duration_min"`
-	AvailableSeats *int                  `json:"available_seats"`
-	Price          *int                  `json:"price"`
-	TripStatus     *constants.TripStatus `json:"trip_status"`
 }
