@@ -43,7 +43,7 @@ func (h *ReviewHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req models.Review
+	var req models.ReviewCreateRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -55,16 +55,7 @@ func (h *ReviewHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	if req.AuthorID == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "author_id is required in request body"})
-		h.logger.Error("missing author_id",
-			slog.String("method", ctx.Request.Method),
-			slog.String("path", ctx.FullPath()),
-		)
-		return
-	}
-
-	review, err := h.service.Create(req.AuthorID, uint(tripID), &req)
+	review, err := h.service.Create(uint(tripID), &req)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

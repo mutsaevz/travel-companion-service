@@ -15,7 +15,7 @@ var (
 )
 
 type ReviewService interface {
-	Create(userID uint, tripID uint, req *models.Review) (*models.Review, error)
+	Create(tripID uint, req *models.ReviewCreateRequest) (*models.Review, error)
 
 	// List() (*models.Review, error)
 
@@ -44,33 +44,38 @@ func NewReviewService(
 	}
 }
 
-func (s *reviewService) Create(userID uint, tripID uint, req *models.Review) (*models.Review, error) {
+func (s *reviewService) Create(tripID uint, req *models.ReviewCreateRequest) (*models.Review, error) {
 
 	op := "service.review.create"
 
-	trip, err := s.tripRepo.GetByID(tripID)
+	_, err := s.tripRepo.GetByID(tripID)
 	if err != nil {
 		return nil, err
 	}
 
-	if trip.TripStatus != "completed" {
-		s.logger.Error("cannot review a trip that is not completed",
-			slog.String("op", op),
-			slog.Uint64("tripID", uint64(tripID)),
-		)
-		return nil, ErrTripNotCompleted
+	// if trip.TripStatus != "completed" {
+	// 	s.logger.Error("cannot review a trip that is not completed",
+	// 		slog.String("op", op),
+	// 		slog.Uint64("tripID", uint64(tripID)),
+	// 	)
+	// 	return nil, ErrTripNotCompleted
+	// }
+
+	isPassenger, err := s.tripRepo.IsPassenger(tripID, req.AuthorID)
+	if err != nil {
+		return nil, err
 	}
 
-	if trip.AvailableSeats == trip.TotalSeats {
-		s.logger.Error("user was not a passenger in this trip",
+	if !isPassenger {
+		s.logger.Error("user is not passenger",
 			slog.String("op", op),
-			slog.Uint64("userID", uint64(userID)),
+			slog.Uint64("userID", uint64(req.AuthorID)),
 			slog.Uint64("tripID", uint64(tripID)),
 		)
 		return nil, ErrUserNotPassenger
 	}
 
-	exists, err := s.reviewRepo.ExistsByTripAndUser(tripID, userID)
+	exists, err := s.reviewRepo.ExistsByTripAndUser(tripID, req.AuthorID)
 
 	if err != nil {
 		s.logger.Error("error checking review existence", slog.String("op", op), slog.Any("error", err))
@@ -79,12 +84,12 @@ func (s *reviewService) Create(userID uint, tripID uint, req *models.Review) (*m
 
 	if exists {
 		s.logger.Error("review already exists for this user and trip",
-			slog.String("op", op), slog.Uint64("userID", uint64(userID)), slog.Uint64("tripID", uint64(tripID)))
+			slog.String("op", op), slog.Uint64("userID", uint64(req.AuthorID)), slog.Uint64("tripID", uint64(tripID)))
 		return nil, ErrReviewAlreadyPresent
 	}
 
 	review := &models.Review{
-		AuthorID: userID,
+		AuthorID: req.AuthorID,
 		TripID:   tripID,
 		Rating:   req.Rating,
 		Text:     req.Text,

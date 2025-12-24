@@ -22,6 +22,8 @@ type TripRepository interface {
 	WithDB(db *gorm.DB) TripRepository
 
 	UpdateAvgRating(tripID uint, avg float64) error
+
+	IsPassenger(tripID, userID uint) (bool, error)
 }
 
 type gormTripRepository struct {
@@ -145,4 +147,18 @@ func (r *gormTripRepository) UpdateAvgRating(tripID uint, avg float64) error {
 		return err
 	}
 	return nil
+}
+
+func (r *gormTripRepository) IsPassenger(tripID, userID uint) (bool, error) {
+	var count int64
+
+	err := r.db.Model(&models.Booking{}).
+		Where("trip_id = ? AND user_id = ?", tripID, userID).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
