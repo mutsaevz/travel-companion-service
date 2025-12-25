@@ -29,7 +29,7 @@ func (h BookingHandler) RegisterRoutes(ctx *gin.Engine) {
 		api.POST("/", h.Create)
 		api.GET("/", h.List)
 		api.GET("/:id", h.GetByID)
-		api.GET("/trip/:trip_id/pending", h.GetAllPendingBookingsByTripID)
+		api.GET("driver/:driver_id/trip/:trip_id/pending", h.GetAllPendingBookingsByTripID)
 		api.PATCH("/:id", h.Update)
 		api.DELETE("/:id", h.Delete)
 	}
@@ -117,8 +117,10 @@ func (h *BookingHandler) GetAllPendingBookingsByTripID(ctx *gin.Context) {
 		slog.String("path", ctx.FullPath()),
 	)
 	tripIDParam := ctx.Param("trip_id")
+	driverIDParam := ctx.Param("driver_id")
 
 	tripID, err := strconv.ParseUint(tripIDParam, 10, 64)
+	driverID, err := strconv.ParseUint(driverIDParam, 10, 64)
 
 	if err != nil {
 		h.logger.Warn("invalid trip ID parameter",
@@ -131,7 +133,7 @@ func (h *BookingHandler) GetAllPendingBookingsByTripID(ctx *gin.Context) {
 		return
 	}
 
-	bookings, err := h.service.GetAllPendingBookingsByTripID(uint(tripID))
+	bookings, err := h.service.GetAllPendingBookingsByTripID(uint(driverID), uint(tripID))
 
 	if err != nil {
 		h.logger.Error("error getting pending bookings by trip ID",

@@ -14,7 +14,7 @@ type BookingRepository interface {
 
 	GetByID(id uint) (*models.Booking, error)
 
-	GetAllPendingBookingsByTripID(tripID uint) ([]models.Booking, error)
+	GetAllPendingBookingsByTripID(driverID, tripID uint) ([]models.Booking, error)
 
 	Exists(tripID uint, passengerID uint) (bool, error)
 
@@ -102,7 +102,7 @@ func (r *gormBookingRepository) GetByID(id uint) (*models.Booking, error) {
 	return &booking, nil
 }
 
-func (r *gormBookingRepository) GetAllPendingBookingsByTripID(tripID uint) ([]models.Booking, error) {
+func (r *gormBookingRepository) GetAllPendingBookingsByTripID(driverID, tripID uint) ([]models.Booking, error) {
 
 	op := "repository.booking.get_all_pending_by_trip_id"
 
@@ -113,7 +113,7 @@ func (r *gormBookingRepository) GetAllPendingBookingsByTripID(tripID uint) ([]mo
 
 	var bookings []models.Booking
 
-	if err := r.DB.Where("trip_id = ? AND booking_status = ?", tripID, "pending").Find(&bookings).Error; err != nil {
+	if err := r.DB.Where("driver_id = ? AND trip_id = ? AND booking_status = ?", driverID, tripID, "pending").Find(&bookings).Error; err != nil {
 		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
 		return nil, err
 	}
