@@ -23,7 +23,7 @@ type BookingService interface {
 
 	GetByID(id uint) (*models.Booking, error)
 
-	GetAllPendingBookingsByTripID(tripID uint) ([]models.Booking, error)
+	GetAllPendingBookingsByTripID(driverID, tripID uint) ([]models.Booking, error)
 
 	Update(id uint, req *dto.BookingUpdateRequest) (*models.Booking, error)
 
@@ -150,13 +150,13 @@ func (s *bookingService) Rejected(bookingID uint, driverID uint) error {
 	})
 }
 
-func (s *bookingService) GetAllPendingBookingsByTripID(tripID uint) ([]models.Booking, error) {
+func (s *bookingService) GetAllPendingBookingsByTripID(driverID, tripID uint) ([]models.Booking, error) {
 
 	op := "service.booking.GetAllPendingBookingsByTripID"
 
 	s.logger.Debug(" call", slog.String("op", op), slog.Uint64("trip_id", uint64(tripID)))
 
-	bookings, err := s.bookingRepo.GetAllPendingBookingsByTripID(tripID)
+	bookings, err := s.bookingRepo.GetAllPendingBookingsByTripID(driverID, tripID)
 	if err != nil {
 		s.logger.Error(" error", slog.String("op", op), slog.Any("error", err))
 		return nil, err

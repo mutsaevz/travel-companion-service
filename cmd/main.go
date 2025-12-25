@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mutsaevz/team-5-ambitious/internal/config"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// инициализация логгера (tmp внутри logging)
 	logger := config.InitLogger()
 
@@ -39,6 +44,15 @@ func main() {
 	userRepo := repository.NewUserRepository(db, logger)
 	carRepo := repository.NewCarRepository(db, logger)
 	tripRepo := repository.NewTripRepository(db, logger)
+
+	tripStatusWorker := services.NewTripStatusWorker(
+		tripRepo,
+		logger,
+		time.Minute,
+	)
+
+	tripStatusWorker.Start(ctx)
+
 	bookingRepo := repository.NewBookingRepository(db, logger)
 	reviewRepo := repository.NewReviewRepository(db, logger)
 
@@ -61,8 +75,6 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
-	repository.TripStatusUpdate(tripRepo)
 
 	logger.Info("application started successfully")
 

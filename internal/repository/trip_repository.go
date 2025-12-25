@@ -26,6 +26,8 @@ type TripRepository interface {
 	UpdateAvgRating(tripID uint, avg float64) error
 
 	IsPassenger(tripID, userID uint) (bool, error)
+
+	UpdateTripStatuses(now time.Time) error
 }
 
 type gormTripRepository struct {
@@ -165,28 +167,26 @@ func (r *gormTripRepository) IsPassenger(tripID, userID uint) (bool, error) {
 	return count > 0, nil
 }
 
-func TripStatusUpdate(repo TripRepository) {
-	r, ok := repo.(*gormTripRepository)
-	if !ok {
-		panic("TripStatusUpdate requires gormTripRepository")
+func (r *gormTripRepository) UpdateTripStatuses(now time.Time) error {
+	op := "repository.trip.update_statuses"
+
+	if err := r.db.Model(&models.Trip{}).
+		Where("trip_status = ?", "published").
+		Where("start_time <= ?", now).
+		Update("trip_status", "in_progress").
+		Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return err
 	}
 
-	go func() {
-		for {
-			time.Sleep(1 * time.Minute)
-			now := time.Now().UTC()
+	if err := r.db.Model(&models.Trip{}).
+		Where("trip_status = ?", "in_progress").
+		Where("start_time + (duration_min * interval '1 minute') <= ?", now).
+		Update("trip_status", "completed").
+		Error; err != nil {
+		r.logger.Error("db error", slog.String("op", op), slog.Any("error", err))
+		return err
+	}
 
-			r.db.Model(&models.Trip{}).
-				Where("trip_status = ?", "published").
-				Where("start_time <= ?", now).
-				Update("trip_status", "in_progress")
-
-			r.db.Model(&models.Trip{}).
-				Where("trip_status = ?", "in_progress").
-				Where("start_time + (duration_min * interval '1 minute') <= ?", now).
-				Update("trip_status", "completed")
-
-		}
-	}()
-
+	return nil
 }
